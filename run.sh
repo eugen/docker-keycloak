@@ -27,9 +27,12 @@ function configure_keycloak {
 	${KCH}/bin/kcadm.sh create realms -s realm=$KEYCLOAK_REALM -s enabled=true
     fi
 
-    if [ $KEYCLOAK_CLIENT_ID ]; then
-	echo Creating client $KEYCLOAK_CLIENT_ID
-	echo '{"clientId": "'$KEYCLOAK_CLIENT_ID'", "webOrigins": ["'$KEYCLOAK_CLIENT_WEB_ORIGINS'"], "redirectUris": ["'KEYCLOAK_CLIENT_REDIRECT_URIS'"]}' | ${KCH}/bin/kcadm.sh create clients -r ${KEYCLOAK_REALM:-master} -f -
+    if [ $KEYCLOAK_CLIENT_IDS ]; then
+	for client in ${KEYCLOAK_CLIENT_IDS//,/ }; do 
+	    echo Creating client $client
+	    echo '{"clientId": "'${client}'", "webOrigins": ["'$KEYCLOAK_CLIENT_WEB_ORIGINS'"], "redirectUris": ["'KEYCLOAK_CLIENT_REDIRECT_URIS'"]}' | ${KCH}/bin/kcadm.sh create clients -r ${KEYCLOAK_REALM:-master} -f -
+	done
+	
     fi
 
     if [ $KEYCLOAK_REALM_ROLES ]; then
