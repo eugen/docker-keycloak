@@ -32,14 +32,18 @@ function configure_keycloak {
 	    echo Creating client $client
 	    echo '{"clientId": "'${client}'", "webOrigins": ["'$KEYCLOAK_CLIENT_WEB_ORIGINS'"], "redirectUris": ["'KEYCLOAK_CLIENT_REDIRECT_URIS'"]}' | ${KCH}/bin/kcadm.sh create clients -r ${KEYCLOAK_REALM:-master} -f -
 	done
-	
     fi
 
     if [ $KEYCLOAK_REALM_ROLES ]; then
-	for role in ${KEYCLOAK_REALM_ROLES//,/ }; do
-	    echo Creating role $role
-	    ${KCH}/bin/kcadm.sh create roles -r ${KEYCLOAK_REALM:-master} -s name=${role}
+        for role in ${KEYCLOAK_REALM_ROLES//,/ }; do
+            echo Creating role $role
+            ${KCH}/bin/kcadm.sh create roles -r ${KEYCLOAK_REALM:-master} -s name=${role}
 	done
+    fi
+	
+    if [ $KEYCLOAK_REALM_SETTINGS ]; then
+	echo Applying extra Realm settings
+	echo $KEYCLOAK_REALM_SETTINGS | ${KCH}/bin/kcadm.sh update realms/${KEYCLOAK_REALM:-master} -f -
     fi
 
     if [ $KEYCLOAK_USER_USERNAME ]; then
@@ -50,8 +54,12 @@ function configure_keycloak {
 
 }
 
-configure_keycloak &
+if [ ! -f /keycloak/standalone/data/docker-container-configuration-done ]; then
+    touch /keycloak/standalone/data/docker-container-configuration-done
+    configure_keycloak &
+fi
 
+# this is not in a volume, at least not by default, so we need to replace the port every time the server runs
 sed -i -e 's/<socket-binding name="http".*/<socket-binding name="http" port="'$KEYCLOAK_PORT'"\/>/' ${KCH}/standalone/configuration/standalone.xml
 
 ${KCH}/bin/add-user-keycloak.sh --user $KEYCLOAK_ADMIN_USER --password $KEYCLOAK_ADMIN_PASSWORD

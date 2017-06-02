@@ -19,6 +19,8 @@ ENV KEYCLOAK_USER_USERNAME=user
 ENV KEYCLOAK_USER_ROLES=user,reporting
 ENV KEYCLOAK_USER_PASSWORD=password
 
+ENV KEYCLOAK_REALM_SETTINGS='{"supportedLocales":["en", "de", "fr"], "defaultLocale":"en", "resetPasswordAllowed": true, "loginTheme": "keycloak"}'
+
 RUN apk update && apk add tar gzip curl bash 
 
 # Use this to download keycloak and extract it on the fly
