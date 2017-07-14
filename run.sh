@@ -48,7 +48,7 @@ function configure_keycloak {
 
     if [ $KEYCLOAK_USER_USERNAME ]; then
 	echo Creating user $KEYCLOAK_USER_USERNAME
-	echo '{"username": "'$KEYCLOAK_USER_USERNAME'", "credentials":[{"value":"'$KEYCLOAK_USER_PASSWORD'", "temporary": false}], "realmRoles":["'${KEYCLOAK_USER_ROLES//,/","}'"]}' \
+	echo '{"username": "'$KEYCLOAK_USER_USERNAME'", "credentials":[{"value":"'$KEYCLOAK_USER_PASSWORD'", "temporary": false}], "enabled": true, "realmRoles":["'${KEYCLOAK_USER_ROLES//,/","}'"]}' \
 	    | ${KCH}/bin/kcadm.sh create users -r ${KEYCLOAK_REALM:-master} -f -
     fi
 
