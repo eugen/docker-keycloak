@@ -4,12 +4,12 @@
 KCH=/keycloak
 
 function is_keycloak_running {
-  local http_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${KEYCLOAK_PORT}/auth/admin/realms)
-  if [[ $http_code -eq 401 ]]; then
-      return 0
-  else
-      return 1
-  fi
+    local http_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${KEYCLOAK_PORT}/auth/admin/realms)
+    if [[ $http_code -eq 401 ]]; then
+	return 0
+    else
+	return 1
+    fi
 }
 
 function configure_keycloak {
@@ -40,7 +40,7 @@ function configure_keycloak {
             ${KCH}/bin/kcadm.sh create roles -r ${KEYCLOAK_REALM:-master} -s name=${role}
 	done
     fi
-	
+    
     if [ "$KEYCLOAK_REALM_SETTINGS" ]; then
 	echo Applying extra Realm settings
 	echo $KEYCLOAK_REALM_SETTINGS | ${KCH}/bin/kcadm.sh update realms/${KEYCLOAK_REALM:-master} -f -
@@ -48,8 +48,11 @@ function configure_keycloak {
 
     if [ $KEYCLOAK_USER_USERNAME ]; then
 	echo Creating user $KEYCLOAK_USER_USERNAME
-	echo '{"username": "'$KEYCLOAK_USER_USERNAME'", "credentials":[{"value":"'$KEYCLOAK_USER_PASSWORD'", "temporary": false}], "enabled": true, "realmRoles":["'${KEYCLOAK_USER_ROLES//,/","}'"]}' \
-	    | ${KCH}/bin/kcadm.sh create users -r ${KEYCLOAK_REALM:-master} -f -
+	# grep would have been nice instead of the double sed, but we don't have gnu grep available, only the busybox grep which is very limited
+	local user_id=$(echo '{"username": "'$KEYCLOAK_USER_USERNAME'", "enabled": true, "realmRoles":["'${KEYCLOAK_USER_ROLES//,/","}'"]}' \
+			    | ${KCH}/bin/kcadm.sh create users -r ${KEYCLOAK_REALM:-master} -f - 2>&1  | sed -e 's/Created new user with id //g' -e "s/'//g")
+	echo "Created user with id ${user_id}"
+	${KCH}/bin/kcadm.sh update users/${user_id}/reset-password -r ${KEYCLOAK_REALM:-master} -s type=password -s value=${KEYCLOAK_USER_PASSWORD} -s temporary=false -n
     fi
 
 }
