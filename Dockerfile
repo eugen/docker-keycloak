@@ -24,11 +24,11 @@ ENV KEYCLOAK_REALM_SETTINGS='{"supportedLocales":["en", "de", "fr"], "defaultLoc
 RUN apk update && apk add tar gzip curl bash 
 
 # Use this to download keycloak and extract it on the fly
-#RUN curl https://downloads.jboss.org/keycloak/7.0.1/keycloak-7.0.1.tar.gz | tar xzvf - 
+RUN curl https://downloads.jboss.org/keycloak/7.0.1/keycloak-7.0.1.tar.gz | tar xzvf - 
 
 # Use these 2 lines to copy the local archive and the extract it
-COPY keycloak-7.0.1.tar.gz /
-RUN tar zxvf keycloak-7.0.1.tar.gz
+#COPY keycloak-7.0.1.tar.gz /
+#RUN tar zxvf keycloak-7.0.1.tar.gz
 
 RUN mv keycloak-7.0.1 keycloak && apk del tar gzip 
 
